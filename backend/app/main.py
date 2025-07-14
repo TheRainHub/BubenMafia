@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.routes import players, games
+from backend.app.routes import games, players
 
 app = FastAPI()
 
