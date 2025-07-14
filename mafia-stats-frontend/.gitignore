@@ -1,0 +1,39 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+package-lock.json
+
+# Build output
+dist/
+build/
+
+# dotenv
+.env
+.env.*
+
+# Editor junk
+.DS_Store
+Thumbs.db
+*.swp
+
+# VSCode
+.vscode/
+*.code-workspace
+
+# Logs
+logs/
+*.log
+*.tsbuildinfo
+
+# Windows
+ehthumbs.db
+Desktop.ini
+
+# Tailwind JIT cache (если используется)
+.tailwind/
+
+# React
+*.local
