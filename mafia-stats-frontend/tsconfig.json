@@ -1,26 +1,15 @@
 {
   "compilerOptions": {
-    "target": "es5",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
-    "allowJs": true,
-    "skipLibCheck": true,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "types": ["vite/client", "node"],
+    "target": "ES2022",
+    "jsx": "react-jsx",
     "strict": true,
-    "forceConsistentCasingInFileNames": true,
-    "noFallthroughCasesInSwitch": true,
-    "module": "esnext",
-    "moduleResolution": "node",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": true,
-    "jsx": "react-jsx"
+    "skipLibCheck": true
   },
   "include": [
-    "src"
+    "src",
+    "vite.config.mts"
   ]
 }
