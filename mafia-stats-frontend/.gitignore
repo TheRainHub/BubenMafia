@@ -1,39 +1,24 @@
-# Node.js
-node_modules/
+# Logs
+logs
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
-package-lock.json
+lerna-debug.log*
 
-# Build output
-dist/
-build/
-
-# dotenv
-.env
-.env.*
-
-# Editor junk
-.DS_Store
-Thumbs.db
-*.swp
-
-# VSCode
-.vscode/
-*.code-workspace
-
-# Logs
-logs/
-*.log
-*.tsbuildinfo
-
-# Windows
-ehthumbs.db
-Desktop.ini
-
-# Tailwind JIT cache (если используется)
-.tailwind/
-
-# React
+node_modules
+dist
+dist-ssr
 *.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
