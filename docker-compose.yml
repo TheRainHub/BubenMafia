@@ -1,0 +1,45 @@
+services:
+  db:
+    image: postgres:15
+    env_file:
+      - .env
+    ports:
+      - "5300:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h db -U admin"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    # 1) Монтируем локальную папку с кодом в /app
+    volumes:
+      - ./backend:/app
+    # 2) Работаем в /app
+    working_dir: /app
+    command: >
+      sh -c "
+        echo 'Waiting for database…' &&
+        until pg_isready -h db -U admin; do
+          sleep 1; echo -n '.'; 
+        done;
+        echo 'Database is up — running migrations' &&
+        alembic -c alembic.ini upgrade head &&
+        echo 'Starting FastAPI' &&
+        uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+      "
+
+volumes:
+  db_data:

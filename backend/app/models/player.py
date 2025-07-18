@@ -1,5 +1,6 @@
+from app.db import Base
 from sqlalchemy import Column, Integer, String
-from backend.app.database import Base
+
 
 class Player(Base):
     __tablename__ = "players"

@@ -1,3 +1,6 @@
+backend/.idea
+backend/.venv
+frontend/.idea
 .DS_*
 *.log
 logs
