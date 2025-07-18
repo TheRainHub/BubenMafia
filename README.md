@@ -1,6 +1,6 @@
 # Buben Mafia
 
-**Buben Mafia** is a modern, closed‑source web application designed to support the full lifecycle of Mafia club events—from real‑time game facilitation to comprehensive historical analysis of played sessions.
+**Buben Mafia** is a modern, closed‑source web application designed to support the full lifecycle of Mafia club events-from real‑time game facilitation to comprehensive historical analysis of played sessions.
 
 ---
 
