@@ -1,4 +1,6 @@
+import importlib
 import os
+import pkgutil
 from logging.config import fileConfig
 from pathlib import Path
 
@@ -7,6 +9,13 @@ from dotenv import load_dotenv
 from sqlalchemy import engine_from_config, pool
 from sqlmodel import SQLModel
 
+
+def import_submodules(package_name: str) -> None:
+    pkg = importlib.import_module(package_name)
+    for loader, name, is_pkg in pkgutil.walk_packages(pkg.__path__, package_name + "."):
+        importlib.import_module(name)
+
+
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
@@ -14,9 +23,9 @@ config = context.config
 env_path = Path(__file__).parents[2] / ".env"
 load_dotenv(env_path)
 
-db_url = os.environ.get("DB_URL")
+db_url = os.environ.get("DATABASE_URL")
 if not db_url:
-    raise RuntimeError("DB_URL not set – cannot run migrations")
+    raise RuntimeError("DATABASE_URL not set – cannot run migrations")
 config.set_main_option("sqlalchemy.url", db_url)
 
 
@@ -29,6 +38,7 @@ if config.config_file_name is not None:
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
+import_submodules("app.models")
 target_metadata = SQLModel.metadata
 
 # other values from the config, defined by the needs of env.py,
