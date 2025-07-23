@@ -4,11 +4,11 @@ services:
     env_file:
       - .env
     ports:
-      - "5300:5432"
+      - "5432:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -h db -U admin"]
+      test: ["CMD-SHELL", "pg_isready -h db -U root"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -32,7 +32,7 @@ services:
     command: >
       sh -c "
         echo 'Waiting for database…' &&
-        until pg_isready -h db -U admin; do
+        until pg_isready -h db -U root; do
           sleep 1; echo -n '.'; 
         done;
         echo 'Database is up — running migrations' &&

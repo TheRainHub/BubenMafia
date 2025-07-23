@@ -19,7 +19,7 @@ COPY . /app
 # 4) По‑умолчанию ждем БД, мигрируем и стартуем приложение
 CMD ["sh", "-c", "\
   echo 'Waiting for database…' && \
-  until pg_isready -h db -U admin; do sleep 1; echo -n '.'; done; \
+  until pg_isready -h db -U root; do sleep 1; echo -n '.'; done; \
   echo '\nDatabase is up — running migrations' && \
   alembic upgrade head && \
   echo 'Starting FastAPI' && \
