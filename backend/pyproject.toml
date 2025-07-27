@@ -1,0 +1,5 @@
+[tool.pytest.ini_options]
+filterwarnings = [
+    "ignore:Support for class-based `config` is deprecated:DeprecationWarning:pydantic\\._",
+    "ignore:Valid config keys have changed in V2.*orm_mode.*:UserWarning:pydantic\\._",
+]
