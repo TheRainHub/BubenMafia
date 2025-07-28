@@ -1,27 +1,50 @@
-from app.db import get_session
-from app.models.player import Player
-from fastapi import APIRouter, Depends, HTTPException
-from sqlmodel import Session, select
+from uuid import UUID
 
-router = APIRouter(tags=["players"])
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlmodel import Session
+
+from app.core.deps import current_gm, get_db
+from app.crud import players as crud
+from app.schemas.players import PlayerCreate, PlayerRead, PlayerUpdate
+
+router = APIRouter(prefix="/players", tags=["players"])
 
 
-@router.get("/", response_model=list[Player])
-def list_players(
-    skip: int = 0,
-    limit: int = 50,
-    session: Session = Depends(get_session),  # <—
+@router.post("/", response_model=PlayerRead, status_code=status.HTTP_201_CREATED)
+def create_player(
+    payload: PlayerCreate,
+    session: Session = Depends(get_db),
 ):
-    players = session.exec(select(Player).offset(skip).limit(limit)).all()
-    return players
+    try:
+        return crud.create(session, payload, registered=True)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.get("/{player_id}", response_model=Player)
-def get_player(
+@router.post(
+    "/quick",
+    response_model=PlayerRead,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(current_gm)],
+)
+def quick_add_player(
+    nickname: str,
+    session: Session = Depends(get_db),
+):
+    try:
+        return crud.quick_add(session, nickname)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.patch("/{player_id}", response_model=PlayerRead)
+def update_player(
     player_id: int,
-    session: Session = Depends(get_session),  # <—
+    payload: PlayerUpdate,
+    session: Session = Depends(get_db),
+    user_id: UUID | None = Depends(current_gm),  # временно: разрешаем GM редактировать
 ):
-    player = session.get(Player, player_id)
+    player = crud.update(session, player_id, payload)
     if not player:
-        raise HTTPException(status_code=404, detail="Player not found")
+        raise HTTPException(404, "Player not found")
     return player
