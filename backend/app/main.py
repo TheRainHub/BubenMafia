@@ -5,10 +5,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.routes import *
-from app.core.auth import fastapi_users, auth_backend
+from app.core.auth import auth_backend, fastapi_users
 from app.core.config import get_settings
 from app.db import init_db
-from app.schemas.users import UserRead, UserCreate
+from app.schemas.users import UserCreate, UserRead
 
 settings = get_settings()
 
@@ -55,6 +55,7 @@ app.include_router(players_router, prefix="/players", tags=["Players"])
 # app.include_router(games_router, prefix="/games",   tags=["Games"])
 # app.include_router(stats_router, prefix="/stats",   tags=["Stats"])
 # app.include_router(events_router, prefix="/events",  tags=["Events"])
+app.include_router(extras_router, prefix="/extras", tags=["Players"])
 
 if __name__ == "__main__":
 	uvicorn.run(
