@@ -48,3 +48,4 @@ uvicorn==0.35.0
 virtualenv==20.31.2
 pytest>=8.4.1
 passlib>=1.7.4
+httpx>=0.28.1

@@ -1,40 +1,27 @@
-from uuid import UUID
+# app/core/deps.py
+
+from typing import Generator
 
 from fastapi import Depends, HTTPException, status
-from sqlmodel import Session
+from sqlalchemy.orm import Session
 
 from app.core.auth import current_user
-from app.crud.users import get as get_user_by_id  # вам понадобится CRUD‑функция для юзеров
+from app.core.enums import UserRole
 from app.db import get_session
-from app.models.user import User  # поправьте путь, если у вас модель лежит в другом месте
+from app.models.user import User
 
 
-def get_db(session: Session = Depends(get_session)) -> Session:
-	"""
-	Общая зависимость для доступа к сессии БД.
-	Теперь её можно юзать во всех роутерах.
-	"""
-	return session
+def get_db(session: Session = Depends(get_session)) -> Generator[Session, None, None]:
+	yield session
 
 
-def current_gm(session: Session = Depends(get_db), user_id: UUID = Depends(), ) -> User:
-	"""
-	Заглушка: получает текущего залогиненного пользователя,
-	проверяет, что это GM, и возвращает его модель.
-	Пока у вас нет полноценного auth‑конфигурации, вы можете
-	временно просто return user или бросать 403, если нужно.
-	"""
-	user = get_user_by_id(session, user_id)
-	if not user or user.role != "gm":
-		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Только GM может выполнять эту операцию", )
+async def current_gm(user: User = Depends(current_user)) -> User:
+	if user.role != UserRole.gm:
+		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="GM only")
 	return user
 
 
-def current_organizer(
-		session: Session = Depends(get_db),
-		user_id: UUID = Depends(current_user),  # fastapi‑users
-) -> User:
-	user = get_user_by_id(session, user_id)
-	if not user or user.role != "organizer":
-		raise HTTPException(status_code=403, detail="Organizers only")
+async def current_organizer(user: User = Depends(current_user)) -> User:
+	if user.role != UserRole.organizer:
+		raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Organizers only")
 	return user

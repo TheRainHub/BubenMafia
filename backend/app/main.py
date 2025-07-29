@@ -8,7 +8,7 @@ from app.api.routes import *
 from app.core.auth import auth_backend, fastapi_users
 from app.core.config import get_settings
 from app.db import init_db
-from app.schemas.users import UserCreate, UserRead
+from app.schemas.users import UserCreate, UserRead, UserUpdate
 
 settings = get_settings()
 
@@ -51,6 +51,12 @@ app.include_router(
 	prefix="/auth",
 	tags=["auth"],
 )
+app.include_router(
+	fastapi_users.get_users_router(UserRead, UserUpdate),
+	prefix="/users",
+	tags=["users"],
+)
+
 app.include_router(players_router, prefix="/players", tags=["Players"])
 # app.include_router(games_router, prefix="/games",   tags=["Games"])
 # app.include_router(stats_router, prefix="/stats",   tags=["Stats"])

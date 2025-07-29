@@ -1,48 +1,26 @@
 from __future__ import annotations
 
-from datetime import datetime
+from typing import Optional
 from uuid import UUID
 
-from pydantic import BaseModel, EmailStr, Field, ConfigDict, constr
+from fastapi_users import schemas as fu_schemas
+from pydantic import ConfigDict
 
 from app.core.enums import UserRole
 
 
-# ─── общее ──────────────────────────────────
-class UserBase(BaseModel):
-	email: EmailStr
-	role: UserRole | str = Field(..., examples=["organizer", "gm", "player"])
+class UserRead(fu_schemas.BaseUser[UUID]):
+	role: UserRole
+	model_config = ConfigDict(from_attributes=True)
 
 
-# ─── read ───────────────────────────────────
-class UserRead(UserBase):
-	id: UUID
-	is_active: bool
-	is_superuser: bool
-	is_verified: bool
-	created_at: datetime
-
-	model_config = ConfigDict(
-		from_attributes=True,
-		populate_by_name=True,  # snake_case ←→ camelCase, если надо
-	)
+class UserCreate(fu_schemas.BaseUserCreate):
+	role: UserRole
 
 
-# ─── create ─────────────────────────────────
-class UserCreate(UserBase):
-	password: constr(min_length=8, max_length=128)
+# при желании можно оставить json_schema_extra с примером
 
 
-# ─── update ─────────────────────────────────
-class UserUpdate(BaseModel):
-	email: EmailStr | None = None
-	password: constr(min_length=8, max_length=128) | None = None
-	role: UserRole | str | None = None
-	is_active: bool | None = None
-	is_superuser: bool | None = None
-	is_verified: bool | None = None
-
-	model_config = ConfigDict(
-		extra="forbid",
-		populate_by_name=True,
-	)
+class UserUpdate(fu_schemas.BaseUserUpdate):
+	role: Optional[UserRole] = None
+	model_config = ConfigDict(extra="forbid", populate_by_name=True)

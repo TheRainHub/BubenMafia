@@ -8,6 +8,7 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlmodel import Session
 
+from app.core.enums import UserRole
 from app.models.user import User
 from app.schemas.users import UserCreate, UserUpdate
 
@@ -65,7 +66,12 @@ def get_by_email(session: Session, email: str) -> Optional[User]:
 
 
 def list_users(session: Session, *, skip: int = 0, limit: int = 100) -> Sequence[User]:
-	stmt = select(User).offset(skip).limit(limit)
+	stmt = (
+		select(User)
+		.order_by(User.id.asc())
+		.offset(skip)
+		.limit(limit)
+	)
 	return session.exec(stmt).scalars().all()
 
 
@@ -92,7 +98,7 @@ def update(session: Session, user_id: UUID, data: UserUpdate) -> Optional[User]:
 	return obj
 
 
-def set_role(session: Session, user_id: UUID, role: str) -> Optional[User]:
+def set_role(session: Session, user_id: UUID, role: UserRole) -> Optional[User]:
 	"""
 	Админская операция — смена роли независимо от UserUpdate.
 	"""

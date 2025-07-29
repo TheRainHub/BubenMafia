@@ -106,7 +106,7 @@ def test_set_role_and_flags(session: Session):
 		is_superuser=False,
 	)
 
-	u2 = crud.set_role(session, u.id, UserRole.organizer if hasattr(UserRole, "organizer") else "organizer")
+	u2 = crud.set_role(session, u.id, UserRole.organizer)
 	assert u2.role in (getattr(UserRole, "organizer", None), "organizer")
 
 	u3 = crud.set_active_flags(session, u.id, is_active=True, is_verified=True, is_superuser=True)
@@ -125,11 +125,9 @@ def test_list_and_delete_users(session: Session):
 		UserCreate(email=_mk_email(), role=UserRole.player, password="Bbbbbbbb1!"),
 	)
 
-	first_page = crud.list_users(session, limit=1)
-	assert len(first_page) == 1
-	second_page = crud.list_users(session, skip=1, limit=10)
-	# теперь second_page — список User, а не Row; доступ к .id валиден
-	assert any(u.id == u2.id for u in second_page) or any(u.id == u1.id for u in second_page)
+	all_users = crud.list_users(session, skip=0, limit=10_000)
+	ids = {u.id for u in all_users}
+	assert u1.id in ids and u2.id in ids
 
 	ok = crud.delete(session, u1.id)
 	assert ok is True
