@@ -15,6 +15,7 @@ COOKIE_NAME = "mjwt"  # Имя cookie — должно совпадать с в�
 
 # ---------- ВСПОМОГАТЕЛЬНЫЕ УТИЛИТЫ ----------
 
+
 def rand_email(prefix: str = "user") -> str:
 	"""Генерирует уникальный email, чтобы тесты не конфликтовали друг с другом."""
 	return f"{prefix}-{uuid.uuid4().hex[:8]}@example.com"
@@ -28,7 +29,7 @@ def register(
 		role: str = "gm",
 		expect_status: Tuple[int, ...] = (200, 201),
 ) -> Response:
-	r = client.post("/auth/register", json={"email": email, "password": password, "role": role})
+	r = client.post("/api/auth/register", json={"email": email, "password": password, "role": role})
 	assert r.status_code in expect_status, f"Unexpected register status {r.status_code}: {r.text}"
 	return r
 
@@ -43,30 +44,31 @@ def login_cookie(
 ) -> Response:
 	if form_content_type:
 		r = client.post(
-			"/auth/jwt/login",
+			"/api/auth/jwt/login",
 			data={"username": email, "password": password},
 			headers={"Content-Type": "application/x-www-form-urlencoded"},
 		)
 	else:
 		# Намеренно неверный формат — JSON
-		r = client.post("/auth/jwt/login", json={"username": email, "password": password})
+		r = client.post("/api/auth/jwt/login", json={"username": email, "password": password})
 	assert r.status_code in expect_status, f"Unexpected login status {r.status_code}: {r.text}"
 	return r
 
 
 def logout(client, expect_status: Tuple[int, ...] = (204,)) -> Response:
-	r = client.post("/auth/jwt/logout")
+	r = client.post("/api/auth/jwt/logout")
 	assert r.status_code in expect_status, f"Unexpected logout status {r.status_code}: {r.text}"
 	return r
 
 
 def get_me(client, expect_status: Tuple[int, ...] = (200,)) -> Response:
-	r = client.get("/users/me")
-	assert r.status_code in expect_status, f"Unexpected /users/me status {r.status_code}: {r.text}"
+	r = client.get("/api/users/me")
+	assert r.status_code in expect_status, f"Unexpected /api/users/me status {r.status_code}: {r.text}"
 	return r
 
 
 # ---------- ТЕСТЫ ОСНОВНОГО ПОТОКА С ДОП. ПРОВЕРКАМИ ----------
+
 
 def test_full_cookie_flow_and_headers(client):
 	email = rand_email("gm")
@@ -99,6 +101,7 @@ def test_full_cookie_flow_and_headers(client):
 
 # ---------- РЕГИСТРАЦИЯ: ВАЛИДАЦИЯ И ДУБЛИКАТЫ ----------
 
+
 @pytest.mark.parametrize(
 	"payload,expected",
 	[
@@ -109,7 +112,7 @@ def test_full_cookie_flow_and_headers(client):
 	],
 )
 def test_register_invalid_payloads(client, payload, expected):
-	r = client.post("/auth/register", json=payload)
+	r = client.post("/api/auth/register", json=payload)
 	assert r.status_code in expected, f"Unexpected status {r.status_code}: {r.text}"
 
 
@@ -118,7 +121,7 @@ def test_register_duplicate_email_case_insensitive(client):
 	register(client, email=email, role="gm")
 	# Повтор другой раскладкой
 	email_upper = email.upper()
-	r = client.post("/auth/register", json={"email": email_upper, "password": "StrongPass123!", "role": "gm"})
+	r = client.post("/api/auth/register", json={"email": email_upper, "password": "StrongPass123!", "role": "gm"})
 	# В зависимости от реализации это может быть 400 или 409 (или 422).
 	assert r.status_code in (400, 409, 422), f"Expected duplicate rejection, got {r.status_code}: {r.text}"
 
@@ -126,7 +129,7 @@ def test_register_duplicate_email_case_insensitive(client):
 def test_register_different_roles_and_me(client):
 	# Если в вашей Enum есть 'player' — проверим, что она сохраняется.
 	email = rand_email("player")
-	r = client.post("/auth/register", json={"email": email, "password": "StrongPass123!", "role": "player"})
+	r = client.post("/api/auth/register", json={"email": email, "password": "StrongPass123!", "role": "player"})
 	assert r.status_code in (200, 201), r.text
 	login_cookie(client, email=email, password="StrongPass123!")
 	me = get_me(client).json()
@@ -134,6 +137,7 @@ def test_register_different_roles_and_me(client):
 
 
 # ---------- ЛОГИН: НЕВЕРНЫЕ ДАННЫЕ И ФОРМАТЫ ----------
+
 
 @pytest.mark.parametrize(
 	"email,password,expected",
@@ -162,10 +166,11 @@ def test_login_requires_form_urlencoded(client):
 	login_cookie(client, email=email, password="StrongPass123!", expect_status=(415, 422, 405), form_content_type=False)
 
 
-# ---------- ДОСТУП К /users/me ПРИ РАЗНЫХ УСЛОВИЯХ ----------
+# ---------- ДОСТУП К /api/users/me ПРИ РАЗНЫХ УСЛОВИЯХ ----------
+
 
 def test_me_unauthorized_without_cookie(client):
-	r = client.get("/users/me")
+	r = client.get("/api/users/me")
 	assert r.status_code in (401, 403), r.text
 
 
@@ -195,6 +200,7 @@ def test_logout_idempotent(client):
 
 
 # ---------- ПОВЕДЕНИЕ ДЛЯ НЕАКТИВНОГО ПОЛЬЗОВАТЕЛЯ ----------
+
 
 @pytest.mark.skipif(User is None, reason="Не найден импорт модели User; скорректируйте путь импорта.")
 def test_inactive_user_cannot_login(client, session: Session):

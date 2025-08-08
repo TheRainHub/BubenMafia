@@ -14,7 +14,10 @@ from sqlalchemy.pool import StaticPool
 from sqlmodel import Session, SQLModel, create_engine
 
 # ────────── 1. Fake env для Settings ──────────
-os.environ.setdefault("DATABASE_URL", "postgresql+psycopg2://user:pass@localhost:5432/test", )
+os.environ.setdefault(
+	"DATABASE_URL",
+	"postgresql+psycopg2://user:pass@localhost:5432/test",
+)
 os.environ.setdefault("SECRET_KEY", "unit-test-secret")
 os.environ.setdefault("TESTING", "1")
 
@@ -42,20 +45,25 @@ if CITEXT is not None:
 
 from app.db import get_session  # noqa: E402
 # ────────── 5. FastAPI импорт ПОСЛЕ fixes ─────
-from app.main import app  # noqa: E402
+from app.main import create_app  # noqa: E402
 from app.models.rule import RuleSet  # noqa: E402
 
 
 # ────────── 6. Engine & Session fixtures ──────
 @pytest.fixture(scope="session")
 def engine():
-	eng = create_engine("sqlite+pysqlite:///:memory:", connect_args={"check_same_thread": False}, poolclass=StaticPool,
-						# ← один коннект на все потоки и сессии
-						echo=False, )
+	eng = create_engine(
+		"sqlite+pysqlite:///:memory:",
+		connect_args={"check_same_thread": False},
+		poolclass=StaticPool,
+		# ← один коннект на все потоки и сессии
+		echo=False,
+	)
 	SQLModel.metadata.create_all(eng)
 
 	# Сид "дефолтного" RuleSet(id=1) один раз на всю сессию pytest
 	from app.models.rule import RuleSet
+
 	with Session(eng) as seed:
 		if not seed.get(RuleSet, 1):
 			seed.add(RuleSet(id=1, name="Default", is_active=True))
@@ -84,6 +92,7 @@ def client(engine) -> Iterator[TestClient]:
 		with Session(engine) as s:
 			yield s
 
+	app = create_app()
 	app.dependency_overrides[get_session] = override_get_session  # type: ignore[attr-defined]
 	try:
 		with TestClient(app) as c:
