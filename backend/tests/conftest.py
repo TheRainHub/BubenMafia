@@ -16,6 +16,7 @@ from sqlmodel import Session, SQLModel, create_engine
 # ────────── 1. Fake env для Settings ──────────
 os.environ.setdefault("DATABASE_URL", "postgresql+psycopg2://user:pass@localhost:5432/test", )
 os.environ.setdefault("SECRET_KEY", "unit-test-secret")
+os.environ.setdefault("TESTING", "1")
 
 # ────────── 2. PYTHONPATH add <backend> ───────
 PROJECT_ROOT = Path(__file__).resolve().parents[1]

@@ -15,9 +15,8 @@ settings = get_settings()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-	# → код до старта приложения
-	# например, создаём таблицы (dev/staging)
-	await init_db()
+	if not settings.testing:
+		await init_db()
 	yield
 
 
